@@ -101,7 +101,7 @@ def preprocess_imdb_data(dataset_path):
     print("\nSplitting dataset into train and test sets...")
     X = df['review']
     y = df['sentiment']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=24)
 
     print("Preprocessing complete.")
     return X_train, X_test, y_train, y_test

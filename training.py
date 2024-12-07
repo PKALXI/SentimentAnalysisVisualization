@@ -2,10 +2,35 @@ from abc import ABC, abstractmethod
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
-from models import LSTMModel
 import pickle
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
 
-model = SVC(kernel = 'rbf', C = 1)
+def LSTMModel():
+    def __init__(self, input_dim, hidden_units=64):
+        self.model=None
+        self.input_dim = input_dim
+        self.hidden_units = hidden_units
+
+    def build_model(self,):
+        self.model = Sequential()
+
+        self.model.add(LSTM(self.hidden_units, input_shape=(1, self.input_dim)))
+        self.model.add(Dense(64, activation='relu'))
+        self.model.add(Dense(1, activation='sigmoid'))
+
+        self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+        return self.model
+    
+    def train_model(self, X_train, y_train, epochs=20, batch_size=1):
+        self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, verbose=2)
+    
+    def predict(self, input):        
+        return self.model.predict(input) 
+    
+    def save_model(self, filepath):
+        self.model.save(filepath)
 
 class Trainer():
     def __init__(self,model):
@@ -14,6 +39,9 @@ class Trainer():
     def save_model(self, location):
         with open(f'{location}.pkl', 'wb') as f:
             pickle.dump(self.model, f)
+
+    @abstractmethod
+    def validate(self, X_val, y_val)
 
 class SVMTrainer(Trainer):
     def __init__(self, model:SVC, kernel='rbf', C=1.0):
@@ -25,6 +53,10 @@ class SVMTrainer(Trainer):
         self.model.fit(X_train, y_train)
         return self.model
     
+    def validation(self, X_val, y_val):
+        y_pred = self.model.predict(X_val)
+        return accuracy_score(y_val, y_pred)
+    
     
 class KNNTrainer(Trainer):
     def __init__(self, model:KNeighborsClassifier, n_neighbours, weights):
@@ -35,6 +67,11 @@ class KNNTrainer(Trainer):
     def train(self, X_train, y_train):
         self.model.fit(X_train, y_train)
         return self.model
+    
+    def validation(self, X_val, y_val):
+        y_pred = self.model.predict(X_val)
+
+        return accuracy_score(y_val, y_pred)
 
     
 class LSTMTrainer(Trainer):
@@ -50,3 +87,36 @@ class LSTMTrainer(Trainer):
     
     def save_model(self, location):
         self.model.export(location)
+
+    def validation(self, X_val, y_val):
+        y_pred = self.model.predict(X_val)
+        return accuracy_score(y_val, y_pred)
+
+
+def main():
+    #Preprocess logic
+    X_train, X_test, y_train, y_test = None, None, None, None
+    
+    input_dim = 200
+
+    my_svm = SVC()
+    my_knn = KNNTrainer()
+    my_lstm = LSTMModel(input_dim)
+
+    trainers = {
+        'SVM' : SVMTrainer(my_svm),
+        'KNN' : KNNTrainer(my_knn),
+        'LSTM' : LSTMTrainer(my_lstm),
+    }
+
+    
+    for trainer_name in trainers:
+        print(f'Training: {trainer_name} ...')
+        trainer = trainers[trainer_name]
+
+        trainer.train(X_train, y_train)
+        acc = trainer.validation(X_test, y_test)
+
+        trainer.save_model(f'./models/{trainer_name}')
+
+        print(f'{trainer_name} acc: {acc}')

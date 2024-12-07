@@ -27,6 +27,26 @@ nltk.download('punkt')
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 
+def clean_text(text):
+    """
+    Cleans raw text by lowercasing, removing HTML tags, URLs, punctuation, and extra spaces.
+    """
+    text = text.lower()  # Lowercase text
+    text = re.sub(r'<.*?>', '', text)  # Remove HTML tags
+    text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)  # Remove URLs
+    text = re.sub(r'\[.*?\]', '', text)  # Remove text within brackets
+    text = re.sub(r'[^a-zA-Z\s]', '', text)  # Remove punctuation and numbers
+    text = text.strip()  # Remove leading/trailing whitespace
+    return text
+
+def tokenize_and_remove_stopwords(text, stop_words):
+    """
+    Tokenizes text and removes stopwords.
+    """
+    tokens = word_tokenize(text)
+    filtered_tokens = [word for word in tokens if word not in stop_words]
+    return ' '.join(filtered_tokens)
+
 def preprocess_imdb_data(dataset_path):
     """
     Function to load, preprocess, and clean the IMDB dataset.
@@ -35,16 +55,13 @@ def preprocess_imdb_data(dataset_path):
     Returns:
         tuple: Cleaned and preprocessed training and testing datasets (X_train, X_test, y_train, y_test).
     """
-
-    # Load dataset
     print("Loading dataset...")
     df = pd.read_csv(dataset_path)
     
-    # Check data structure
     print("Dataset loaded successfully. Sample rows:")
     print(df.head())
 
-    # Standardize column names if necessary
+    # Standardize column names
     if 'sentiment' not in df.columns:
         df.columns = ['review', 'sentiment']
 
@@ -59,43 +76,23 @@ def preprocess_imdb_data(dataset_path):
     df['sentiment'] = label_encoder.fit_transform(df['sentiment'])
 
     # Display examples of unprocessed reviews
-    # Delete this
     print("\nExamples of unprocessed reviews:")
-    print("Positive review:")
-    print(df[df['sentiment'] == 1]['review'].iloc[0])
-    print("Negative review:")
-    print(df[df['sentiment'] == 0]['review'].iloc[0])
+    print("Positive review:", df[df['sentiment'] == 1]['review'].iloc[0])
+    print("Negative review:", df[df['sentiment'] == 0]['review'].iloc[0])
 
     # Clean text data
     print("\nCleaning text data...")
-    def clean_text(text):
-        text = text.lower()  # Lowercase text
-        text = re.sub(r'<.*?>', '', text)  # Remove HTML tags
-        text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)  # Remove URLs
-        text = re.sub(r'\[.*?\]', '', text)  # Remove text within brackets
-        text = re.sub(r'[^a-zA-Z\s]', '', text)  # Remove punctuation and numbers
-        text = text.strip()  # Remove leading/trailing whitespace
-        return text
-
     df['review'] = df['review'].apply(clean_text)
 
     # Remove stopwords and tokenize
     print("Removing stopwords and tokenizing...")
     stop_words = set(stopwords.words('english'))
-    def tokenize_and_remove_stopwords(text):
-        tokens = word_tokenize(text)
-        filtered_tokens = [word for word in tokens if word not in stop_words]
-        return ' '.join(filtered_tokens)
-
-    df['review'] = df['review'].apply(tokenize_and_remove_stopwords)
+    df['review'] = df['review'].apply(lambda text: tokenize_and_remove_stopwords(text, stop_words))
 
     # Display examples of processed reviews
-    # Delete this
     print("\nExamples of processed reviews:")
-    print("Positive review:")
-    print(df[df['sentiment'] == 1]['review'].iloc[0])
-    print("Negative review:")
-    print(df[df['sentiment'] == 0]['review'].iloc[0])
+    print("Positive review:", df[df['sentiment'] == 1]['review'].iloc[0])
+    print("Negative review:", df[df['sentiment'] == 0]['review'].iloc[0])
 
     # Split data into training and testing sets
     print("\nSplitting dataset into train and test sets...")
@@ -111,7 +108,7 @@ path = kagglehub.dataset_download("lakshmi25npathi/imdb-dataset-of-50k-movie-rev
 
 if path is None:
     raise ValueError("Failed to download dataset. Ensure `kagglehub` is correctly configured.")
-dataset_path = f"{path}/IMDB Dataset.csv"  # Adjust path to your dataset
+dataset_path = f"{path}/IMDB Dataset.csv"
 
 X_train, X_test, y_train, y_test = preprocess_imdb_data(dataset_path)
 

@@ -6,7 +6,7 @@ import pickle
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 
-def LSTMModel():
+class LSTMModel():
     def __init__(self, input_dim, hidden_units=64):
         self.model=None
         self.input_dim = input_dim
@@ -29,8 +29,8 @@ def LSTMModel():
     def predict(self, input):        
         return self.model.predict(input) 
     
-    def save_model(self, filepath):
-        self.model.save(filepath)
+    # def save_model(self, filepath):
+    #     self.model.save(filepath)
 
 class Trainer():
     def __init__(self,model):
@@ -41,7 +41,12 @@ class Trainer():
             pickle.dump(self.model, f)
 
     @abstractmethod
-    def validate(self, X_val, y_val)
+    def train(self, X_train, y_train):
+        pass
+
+    @abstractmethod
+    def validation(self, X_val, y_val):
+        pass
 
 class SVMTrainer(Trainer):
     def __init__(self, model:SVC, kernel='rbf', C=1.0):
@@ -70,7 +75,6 @@ class KNNTrainer(Trainer):
     
     def validation(self, X_val, y_val):
         y_pred = self.model.predict(X_val)
-
         return accuracy_score(y_val, y_pred)
 
     
@@ -86,37 +90,57 @@ class LSTMTrainer(Trainer):
         self.model.train_model(X_train, y_train, batch_size = self.batch_size, epochs = self.epochs)
     
     def save_model(self, location):
-        self.model.export(location)
+        # self.model.export(location)
+        self.model.model.save(f'{location}.h5')
 
     def validation(self, X_val, y_val):
         y_pred = self.model.predict(X_val)
         return accuracy_score(y_val, y_pred)
 
 
+def save_test_data(X_test, y_test):
+
+    with open('X_test.pkl', 'wb') as f:
+        pickle.dump(X_test, f)
+
+    with open('y_test.pkl', 'wb') as f:
+        pickle.dump(y_test, f)
+
+
+def load_data():
+    return None
+
+def preprocess(data):
+    return None
+
+
 def main():
     #Preprocess logic
-    X_train, X_test, y_train, y_test = None, None, None, None
+    data = load_data()
+    X_train, X_test, X_val,  y_train, y_val, y_test = preprocess(data)
+    # change as needed
+
+    save_test_data(X_test, y_test)
     
     input_dim = 200
 
     my_svm = SVC()
-    my_knn = KNNTrainer()
+    my_knn = KNeighborsClassifier()
     my_lstm = LSTMModel(input_dim)
 
     trainers = {
         'SVM' : SVMTrainer(my_svm),
-        'KNN' : KNNTrainer(my_knn),
+        'KNN' : KNNTrainer(my_knn, n_neighbours=5, weights='uniform'), #change as needed
         'LSTM' : LSTMTrainer(my_lstm),
     }
 
     
-    for trainer_name in trainers:
+    for trainer_name, trainer in trainers.items():
         print(f'Training: {trainer_name} ...')
-        trainer = trainers[trainer_name]
-
+        
         trainer.train(X_train, y_train)
-        acc = trainer.validation(X_test, y_test)
+        accuracy = trainer.validate(X_val, y_val)
 
         trainer.save_model(f'./models/{trainer_name}')
 
-        print(f'{trainer_name} acc: {acc}')
+        print(f'{trainer_name} acc: {accuracy}')

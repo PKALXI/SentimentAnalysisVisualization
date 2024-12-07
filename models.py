@@ -18,3 +18,14 @@ def LSTMModel():
         self.model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
         return self.model
+    
+    def train_model(self, X_train, y_train, epochs=20, batch_size=1):
+        self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, verbose=2)
+    
+    def predict(self, input):        
+        return self.model.predict(input) 
+    
+    def save_model(self, filepath):
+        self.model.save(filepath)
+
+

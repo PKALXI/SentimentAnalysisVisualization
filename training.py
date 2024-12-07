@@ -179,9 +179,6 @@ def main():
     save_test_data(X_test_pca, y_test)
     save_train_data(X_train_pca, y_train)
 
-    X_train, y_train = load_train_data()
-    X_val, y_val = load_test_data()
-
     # X_train_pca, y_train = load_train_data()
     # X_test_pca, y_test = load_test_data()
 

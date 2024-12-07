@@ -139,7 +139,7 @@ def main():
         print(f'Training: {trainer_name} ...')
         
         trainer.train(X_train, y_train)
-        accuracy = trainer.validate(X_val, y_val)
+        accuracy = trainer.validation(X_val, y_val)
 
         trainer.save_model(f'./models/{trainer_name}')
 

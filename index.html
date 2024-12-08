@@ -5,30 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Sentiment Analysis Visualization</title>
+
+    <script>
+        async function getPrediction(event) {
+            event.preventDefault(); // Prevent the default form submission behavior
+
+            // Get the input value
+            const userInput = document.querySelector('.user__input').value;
+
+            const formData = new FormData();
+            formData.append('query', userInput);
+
+            // Make a POST request to the server
+            try {
+                const response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                console.log(response);
+
+                // Parse the JSON response
+                const data = await response.json();
+
+                console.log(data.prediction);
+
+
+                // Display the sentiment result
+                document.querySelector('.right p').textContent = `This movie review was: ${data.prediction}`;
+            } catch (error) {
+                console.error('Error fetching prediction:', error);
+                document.querySelector('.right p').textContent = 'Error fetching prediction. Please try again.';
+            }
+        }
+    </script>
 </head>
 <body>
     <center>
         <h1>Sentiment Analysis Visualizer</h1>
 
-        <h2>Pranav Kalsi & Inreet Kaur</h2>
+        <h2>Pranav & Inreet & Millad</h2>
 
-        <p>In this project we aim to visualize the sentiment of movie reviews and provide the sentiment of each word and how it affects the score.</h3>
+        <p>In this project, we aim to visualize the sentiment of movie reviews and provide the sentiment of each word and how it affects the score.</p>
     </center>
 
     <div class="container">
-        <div class = "left">
+        <div class="left">
             <center>
-                <h3>Enter your text</h2>
-                <form>
-                    <input class = "user__input" type="text" placeholder="Enter your review"/>
+                <h3>Enter your text</h3>
+                <form onsubmit="getPrediction(event)">
+                    <input class="user__input" type="text" placeholder="Enter your review" required />
+                    <button type="submit">Submit!</button>
                 </form>
             </center>
         </div>
         <div class="right">
             <center>
-                <h3>Your Sentiment...</h2>
+                <h3>Your Sentiment...</h3>
                 <p>This movie review was: NEGATIVE</p>
-                
             </center>
         </div>
     </div>

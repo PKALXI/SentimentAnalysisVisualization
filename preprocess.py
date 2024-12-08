@@ -43,9 +43,9 @@ def tokenize_and_remove_stopwords(text, stop_words):
     """
     Tokenizes text and removes stopwords.
     """
-    tokens = word_tokenize(text)
-    filtered_tokens = [word for word in tokens if word not in stop_words]
-    return ' '.join(filtered_tokens)
+    tokens = word_tokenize(text) # Tokenize text into words
+    filtered_tokens = [word for word in tokens if word not in stop_words] # Remove stopwords
+    return ' '.join(filtered_tokens) # Rejoin tokens into a single string
 
 def preprocess_imdb_data(dataset_path):
     """
@@ -56,10 +56,10 @@ def preprocess_imdb_data(dataset_path):
         tuple: Cleaned and preprocessed training and testing datasets (X_train, X_test, y_train, y_test).
     """
     print("Loading dataset...")
-    df = pd.read_csv(dataset_path)
+    df = pd.read_csv(dataset_path) # Load dataset from CSV
     
     print("Dataset loaded successfully. Sample rows:")
-    print(df.head())
+    print(df.head()) # Display first few rows
 
     # Standardize column names
     if 'sentiment' not in df.columns:
@@ -108,9 +108,11 @@ path = kagglehub.dataset_download("lakshmi25npathi/imdb-dataset-of-50k-movie-rev
 
 if path is None:
     raise ValueError("Failed to download dataset. Ensure `kagglehub` is correctly configured.")
-dataset_path = f"{path}/IMDB Dataset.csv"
+dataset_path = f"{path}/IMDB Dataset.csv" # Define dataset path
 
+# Preprocess the IMDB dataset
 X_train, X_test, y_train, y_test = preprocess_imdb_data(dataset_path)
 
+# Print the sizes of the training and testing datasets
 print("Training samples:", len(X_train))
 print("Testing samples:", len(X_test))

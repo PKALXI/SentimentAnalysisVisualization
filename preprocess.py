@@ -115,4 +115,5 @@ X_train, X_test, y_train, y_test = preprocess_imdb_data(dataset_path)
 
 # Print the sizes of the training and testing datasets
 print("Training samples:", len(X_train))
+
 print("Testing samples:", len(X_test))

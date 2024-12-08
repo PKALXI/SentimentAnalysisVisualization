@@ -8,15 +8,13 @@
 
     <script>
         async function getPrediction(event) {
-            event.preventDefault(); // Prevent the default form submission behavior
+            event.preventDefault();
 
-            // Get the input value
             const userInput = document.querySelector('.user__input').value;
 
             const formData = new FormData();
             formData.append('query', userInput);
 
-            // Make a POST request to the server
             try {
                 const response = await fetch('http://127.0.0.1:5000/predict', {
                     method: 'POST',
@@ -25,17 +23,32 @@
 
                 console.log(response);
 
-                // Parse the JSON response
                 const data = await response.json();
 
                 console.log(data.prediction);
 
+                const sentimentBox = document.querySelector('.right');
 
-                // Display the sentiment result
                 document.querySelector('.right p').textContent = `This movie review was: ${data.prediction}`;
+                
+
+                if (data.prediction.toLowerCase() === 'positive') {
+                    sentimentBox.style.backgroundColor = 'rgb(179, 255, 179)'; // Light green
+                    sentimentBox.style.borderColor = 'green';
+                    alert('Prediction Complete!')
+
+                } else if (data.prediction.toLowerCase() === 'negative') {
+                    sentimentBox.style.backgroundColor = 'rgb(255, 179, 179)'; // Light red
+                    sentimentBox.style.borderColor = 'red';
+                    alert('Prediction Complete!')
+
+                }
+
+
             } catch (error) {
                 console.error('Error fetching prediction:', error);
                 document.querySelector('.right p').textContent = 'Error fetching prediction. Please try again.';
+                document.querySelector('.right').style.backgroundColor = 'lightgray'; // Fallback color
             }
         }
     </script>
@@ -62,7 +75,7 @@
         <div class="right">
             <center>
                 <h3>Your Sentiment...</h3>
-                <p>This movie review was: NEGATIVE</p>
+                <p>This movie review was: </p>
             </center>
         </div>
     </div>
